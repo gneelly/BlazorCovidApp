@@ -1,0 +1,196 @@
+﻿@page "/covid"
+@inject HttpClient Http
+
+
+<PageTitle>Covid Data</PageTitle>
+
+<h1>Covid data</h1>
+
+<p>This shows state data pertaining to covid-19</p>
+
+@if (statesData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>State</th>
+                <th>Positive</th>
+                <th>Negative</th>
+                <th>Hospitalized Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stateData in statesData)
+            {
+                <tr>
+                    <td>@stateData.newDate.ToString("MM-dd-yyyy")</td>
+                    <td>@stateData.grade</td>
+                    <td>@stateData.positive</td>
+                    <td>@stateData.negative</td>
+                    <td>@stateData.hospitalizedCumulative</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private bool isSortedAscending;
+    private string activeSortColumn;
+    //private StateData[]? statesData;
+    List<StateData> statesData;
+    public string sortState = "default";
+
+    public void sortData(List<StateData> statesData, string sortState){
+        switch(sortState){
+            case "state":
+                statesData.Sort(delegate (StateData x, StateData y) {
+                    return x.state.CompareTo(y.state);
+                });
+                break;
+            default:
+                statesData.OrderBy(ob => ob.hospitalizedCumulative);
+                break;
+        }
+
+    }
+
+
+
+    //protected override async Task OnInitializedAsync() => statesData = await Http.GetFromJsonAsync<List<StateData>>("https://api.covidtracking.com/v1/states/current.json");
+
+    protected override async Task OnInitializedAsync()
+    {
+        statesData = await Http.GetFromJsonAsync<List<StateData>>("https://api.covidtracking.com/v1/us/daily.json");
+        sortData(statesData, sortState);
+    }
+    public class StateData
+    {
+        //public int date { get; set; }
+        //public DateTime newDate => DateTime.ParseExact(date.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None);
+        public string state { get; set; }
+        //public int positive { get; set; }
+        //public int? probableCases { get; set; }
+        //public int? negative { get; set; }
+        //public int? pending { get; set; }
+        //public string totalTestResultsSource { get; set; }
+        //public int totalTestResults { get; set; }
+        //public int? hospitalizedCurrently { get; set; }
+        //public int? hospitalizedCumulative { get; set; }
+        //public int? inIcuCurrently { get; set; }
+        //public int? inIcuCumulative { get; set; }
+        //public int? onVentilatorCurrently { get; set; }
+        //public int? onVentilatorCumulative { get; set; }
+        //public int? recovered { get; set; }
+        //public string lastUpdateEt { get; set; }
+        //public DateTime? dateModified { get; set; }
+        //public string checkTimeEt { get; set; }
+        //public int death { get; set; }
+        //public int? hospitalized { get; set; }
+        //public int? hospitalizedDischarged { get; set; }
+        //public DateTime? dateChecked { get; set; }
+        //public int? totalTestsViral { get; set; }
+        //public int? positiveTestsViral { get; set; }
+        //public int? negativeTestsViral { get; set; }
+        //public int? positiveCasesViral { get; set; }
+        //public int? deathConfirmed { get; set; }
+        //public int? deathProbable { get; set; }
+        //public int? totalTestEncountersViral { get; set; }
+        //public int? totalTestsPeopleViral { get; set; }
+        //public int? totalTestsAntibody { get; set; }
+        //public int? positiveTestsAntibody { get; set; }
+        //public int? negativeTestsAntibody { get; set; }
+        //public int? totalTestsPeopleAntibody { get; set; }
+        //public int? positiveTestsPeopleAntibody { get; set; }
+        //public int? negativeTestsPeopleAntibody { get; set; }
+        //public int? totalTestsPeopleAntigen { get; set; }
+        //public int? positiveTestsPeopleAntigen { get; set; }
+        //public int? totalTestsAntigen { get; set; }
+        //public int? positiveTestsAntigen { get; set; }
+        //public string fips { get; set; }
+        //public int positiveIncrease { get; set; }
+        //public int negativeIncrease { get; set; }
+        //public int total { get; set; }
+        //public int totalTestResultsIncrease { get; set; }
+        //public int posNeg { get; set; }
+        //public object dataQualityGrade { get; set; }
+        //public int deathIncrease { get; set; }
+        //public int hospitalizedIncrease { get; set; }
+        //public string hash { get; set; }
+        //public int commercialScore { get; set; }
+        //public int negativeRegularScore { get; set; }
+        //public int negativeScore { get; set; }
+        //public int positiveScore { get; set; }
+        //public int score { get; set; }
+        //public string grade { get; set; }
+
+        public int date { get; set; }
+        public DateTime newDate => DateTime.ParseExact(date.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None);
+        //public string? state { get; set; }
+        public int? positive { get; set; }
+        public object probableCases { get; set; }
+        public object negative { get; set; }
+        public object pending { get; set; }
+        public string totalTestResultsSource { get; set; }
+        public object totalTestResults { get; set; }
+        public object hospitalizedCurrently { get; set; }
+        public object hospitalizedCumulative { get; set; }
+        public object inIcuCurrently { get; set; }
+        public object inIcuCumulative { get; set; }
+        public object onVentilatorCurrently { get; set; }
+        public object onVentilatorCumulative { get; set; }
+        public object recovered { get; set; }
+        public object lastUpdateEt { get; set; }
+        public object dateModified { get; set; }
+        public object checkTimeEt { get; set; }
+        public object death { get; set; }
+        public object hospitalized { get; set; }
+        public object hospitalizedDischarged { get; set; }
+        public object dateChecked { get; set; }
+        public object totalTestsViral { get; set; }
+        public object positiveTestsViral { get; set; }
+        public object negativeTestsViral { get; set; }
+        public object positiveCasesViral { get; set; }
+        public object deathConfirmed { get; set; }
+        public object deathProbable { get; set; }
+        public object totalTestEncountersViral { get; set; }
+        public object totalTestsPeopleViral { get; set; }
+        public object totalTestsAntibody { get; set; }
+        public object positiveTestsAntibody { get; set; }
+        public object negativeTestsAntibody { get; set; }
+        public object totalTestsPeopleAntibody { get; set; }
+        public object positiveTestsPeopleAntibody { get; set; }
+        public object negativeTestsPeopleAntibody { get; set; }
+        public object totalTestsPeopleAntigen { get; set; }
+        public object positiveTestsPeopleAntigen { get; set; }
+        public object totalTestsAntigen { get; set; }
+        public object positiveTestsAntigen { get; set; }
+        public string fips { get; set; }
+        public int positiveIncrease { get; set; }
+        public int negativeIncrease { get; set; }
+        public int total { get; set; }
+        public int totalTestResultsIncrease { get; set; }
+        public int posNeg { get; set; }
+        public object dataQualityGrade { get; set; }
+        public int deathIncrease { get; set; }
+        public int hospitalizedIncrease { get; set; }
+        public string hash { get; set; }
+        public int commercialScore { get; set; }
+        public int negativeRegularScore { get; set; }
+        public int negativeScore { get; set; }
+        public int positiveScore { get; set; }
+        public int score { get; set; }
+        public string grade { get; set; }
+
+    }
+    
+
+
+
+}

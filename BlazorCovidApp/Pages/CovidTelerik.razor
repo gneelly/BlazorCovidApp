@@ -1,0 +1,180 @@
+﻿@page "/covid"
+@inject HttpClient Http
+
+<PageTitle>Covid Data</PageTitle>
+
+<h1>Covid data</h1>
+
+<p>This table shows Covid-19 data uploaded by date for each state</p>
+
+@if (statesData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <TelerikGrid Data="@statesData" @ref="@Grid"
+             Pageable="true"
+             Sortable="true"
+             OnStateInit="@((GridStateEventArgs<StateData> args) => OnStateInitHandler(args))"
+             FilterMode="@GridFilterMode.FilterRow">
+        <GridColumns>
+            <GridColumn Field="newDate" Title="Date" DisplayFormat="{0:D}" />
+            <GridColumn Field="state" Title="State" />
+            <GridColumn Field="total" Title="Total Cases" />
+            <GridColumn Field="positive" Title="Positive" />
+            <GridColumn Field="negative" Title="Negative" />
+            <GridColumn Field="hospitalizedCumulative" Title="Hospitalized Total" />
+            <GridColumn Field="hospitalRate" DisplayFormat="{0:0.0000}" Title="Hospitalization Rate" />
+        </GridColumns>
+    </TelerikGrid>
+}
+
+
+@code {
+
+    //Variables
+    List<StateData> statesData;
+    public TelerikGrid<StateData> Grid { get; set; }
+
+    //Methods
+
+    //Depreciated: Used to sort values in list, no longer applicable with Telerik
+    //public void sortData(List<StateData> statesData)
+    //{
+    //    statesData.OrderBy(ob => ob.hospitalizedCumulative);
+
+    //}
+
+    //Used to default sort by hospitalRate when grid is initialized
+    async Task OnStateInitHandler(GridStateEventArgs<StateData> args)
+    {
+        var state = new GridState<StateData>
+            {
+                SortDescriptors = new List<SortDescriptor>
+            {
+                new SortDescriptor{ Member = "hospitalRate", SortDirection = ListSortDirection.Descending }
+            }
+            };
+
+        args.GridState = state;
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Pulls json from link and inputs into list named statesData
+        statesData = await Http.GetFromJsonAsync<List<StateData>>("https://api.covidtracking.com/v1/states/daily.json");
+        //For Each is used to fill in null values for proper sorting of table
+        foreach (var item in statesData)
+        {
+            //Error: 10/3/22 Will not allow grid to load - used to add current and discharged patients in case cumulative is null
+            //if (item.hospitalizedCumulative == null && item.hospitalizedCurrently != null && item.hospitalizedDischarged != null){
+            //    item.hospitalizedCumulative = item.hospitalizedCurrently + item.hospitalizedDischarged;
+            //}
+            //else if(item.hospitalizedCumulative == null){
+            //    item.hospitalizedCumulative = 0;
+            //}
+
+            //gives item negative null a value from total minus positive or gives it a 0 value
+            if (item.negative == null &&  item.positive != null)
+            {
+                item.negative = item.total - item.positive;
+            }
+            else if (item.negative == null)
+            {
+                item.negative = 0;
+            }
+            //If the item positive value is greater than total hospitalized will create out of scope hospitalization rate
+            if (item.positive <= item.hospitalizedCumulative && item.negative != null)
+            {
+                item.positive = item.total - item.negative;
+            }
+            //Checks if hospital formula will have null value, uses hospitalizedCumulative divided by positive to get the rate
+            if (item.hospitalizedCumulative == null || item.positive == null)
+            {
+                item.hospitalRate = 0;
+            }
+            else if (item.positive <= item.hospitalizedCumulative && item.positiveCasesViral != null)
+            {
+                item.hospitalRate = (double)item.hospitalizedCumulative / (double)(item.positiveCasesViral);
+            }
+            else
+            {
+                item.hospitalRate = (double)item.hospitalizedCumulative / (double)item.positive;
+            }
+        }
+    }
+
+    //Classes
+
+    public class StateData
+    {
+        //Used variables
+        public int date { get; set; }
+        public DateTime newDate => DateTime.ParseExact(date.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None);
+        public string? state { get; set; }
+        public int? positive { get; set; }
+        public int? hospitalizedCurrently { get; set; }
+        public int? hospitalizedDischarged { get; set; }
+        public int? hospitalizedCumulative { get; set; }
+        public int? negative { get; set; }
+        public double hospitalRate { get; set; }
+        public int total { get; set; }
+
+        //Unused variables
+        public object probableCases { get; set; }
+        public object pending { get; set; }
+        public string totalTestResultsSource { get; set; }
+        public object totalTestResults { get; set; }
+        public object inIcuCurrently { get; set; }
+        public object inIcuCumulative { get; set; }
+        public object onVentilatorCurrently { get; set; }
+        public object onVentilatorCumulative { get; set; }
+        public object recovered { get; set; }
+        public object lastUpdateEt { get; set; }
+        public object dateModified { get; set; }
+        public object checkTimeEt { get; set; }
+        public object death { get; set; }
+        public object hospitalized { get; set; }
+        public object dateChecked { get; set; }
+        public object totalTestsViral { get; set; }
+        public object positiveTestsViral { get; set; }
+        public object negativeTestsViral { get; set; }
+        public object positiveCasesViral { get; set; }
+        public object deathConfirmed { get; set; }
+        public object deathProbable { get; set; }
+        public object totalTestEncountersViral { get; set; }
+        public object totalTestsPeopleViral { get; set; }
+        public object totalTestsAntibody { get; set; }
+        public object positiveTestsAntibody { get; set; }
+        public object negativeTestsAntibody { get; set; }
+        public object totalTestsPeopleAntibody { get; set; }
+        public object positiveTestsPeopleAntibody { get; set; }
+        public object negativeTestsPeopleAntibody { get; set; }
+        public object totalTestsPeopleAntigen { get; set; }
+        public object positiveTestsPeopleAntigen { get; set; }
+        public object totalTestsAntigen { get; set; }
+        public object positiveTestsAntigen { get; set; }
+        public string fips { get; set; }
+        public int positiveIncrease { get; set; }
+        public int negativeIncrease { get; set; }
+        public int totalTestResultsIncrease { get; set; }
+        public int posNeg { get; set; }
+        public object dataQualityGrade { get; set; }
+        public int deathIncrease { get; set; }
+        public int hospitalizedIncrease { get; set; }
+        public string hash { get; set; }
+        public int commercialScore { get; set; }
+        public int negativeRegularScore { get; set; }
+        public int negativeScore { get; set; }
+        public int positiveScore { get; set; }
+        public int score { get; set; }
+        public string grade { get; set; }
+
+    }
+
+
+
+
+}
