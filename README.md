@@ -5,4 +5,5 @@ This application is used to consume https://covidtracking.com/data/api and displ
 Resources used:
 Telerik
 Blazor
+Visual Studio
 Covid Tracking Data: https://covidtracking.com/data/api
